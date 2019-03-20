@@ -1,0 +1,4 @@
+name: ${project.name}
+version: ${project.version}
+main: com.volmit.terra.Terra
+depend: [Mortar]
