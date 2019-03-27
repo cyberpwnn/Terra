@@ -1,8 +1,12 @@
 package com.volmit.terra;
 
-import org.bukkit.generator.ChunkGenerator;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
+import java.util.concurrent.ForkJoinWorkerThread;
 
-import com.volmit.terra.generator.SimplexTerraGenerator;
+import org.bukkit.generator.ChunkGenerator;
 
 import mortar.bukkit.command.Command;
 import mortar.bukkit.plugin.MortarPlugin;
@@ -12,17 +16,18 @@ public class Terra extends MortarPlugin
 {
 	@Command
 	private CommandTerra terra;
+	private static ExecutorService e;
 
 	@Override
 	public void start()
 	{
-
+		e = null;
 	}
 
 	@Override
 	public void stop()
 	{
-
+		e = null;
 	}
 
 	@Override
@@ -34,9 +39,36 @@ public class Terra extends MortarPlugin
 	@Override
 	public ChunkGenerator getDefaultWorldGenerator(String worldName, String id)
 	{
-		SimplexTerraGenerator spx = new SimplexTerraGenerator();
-		spx.setMulticore(true);
+		TerraGen spx = new TerraGen();
+		spx.setParallelism(4);
 
 		return spx;
+	}
+
+	public static ExecutorService pool()
+	{
+		if(e != null)
+		{
+			return e;
+		}
+
+		return e = new ForkJoinPool(16, new ForkJoinWorkerThreadFactory()
+		{
+			@Override
+			public ForkJoinWorkerThread newThread(ForkJoinPool pool)
+			{
+				final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+				worker.setName("Terra Parallel Generator " + worker.getPoolIndex());
+				worker.setPriority(Thread.MAX_PRIORITY);
+				return worker;
+			}
+		}, new UncaughtExceptionHandler()
+		{
+			@Override
+			public void uncaughtException(Thread t, Throwable e)
+			{
+				e.printStackTrace();
+			}
+		}, true);
 	}
 }

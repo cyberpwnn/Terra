@@ -9,8 +9,6 @@ import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
 import org.bukkit.generator.ChunkGenerator.BiomeGrid;
 
-import com.volmit.terra.generator.SimplexTerraGenerator;
-
 import mortar.api.nms.NMP;
 import mortar.api.sched.J;
 import mortar.api.world.MaterialBlock;
@@ -49,8 +47,8 @@ public class CommandTerra extends MortarCommand
 	{
 		J.a(() ->
 		{
-			SimplexTerraGenerator gen = new SimplexTerraGenerator();
-			gen.setMulticore(true);
+			TerraGen gen = new TerraGen();
+			gen.setParallelism(4);
 			short[][] t = gen.generateExtBlockSections(m.getWorld(), new Random(m.getWorld().getSeed()), m.getX(), m.getZ(), new BiomeGrid()
 			{
 				@Override
